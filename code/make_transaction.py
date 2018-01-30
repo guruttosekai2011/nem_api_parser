@@ -35,6 +35,7 @@ class TransactionCreator:
         self.transfer_data = b''
 
     # --- TODO --- メッセージの扱いがドキュメント読んでもイマイチ分かりきってない.
+    # encode('utf-8') によって、stringからbytes列に変換されているので、これ一個で大丈夫なはず
     # --- TODO --- バイト数の計算方法
     def set_message_info(self):
         """ Get message infomations.
@@ -44,7 +45,7 @@ class TransactionCreator:
             message field length : 4 byte
             message type : 4 byte (plane or encryption)
             payload length : 4 byte
-            payload : utf-8 string
+            payload : utf-8 bytes
         """
         if self.message_type == 'plane':
             self.message_type = self.convert_number_to_byte(1, byte_num=4)
@@ -54,7 +55,8 @@ class TransactionCreator:
             msg = 'Invalid message type. Select plane or encryption!'
             raise Exception(msg)
 
-        self.payload = self.message.encode('utf-8').hex().encode('utf-8')
+        #self.payload = self.message.encode('utf-8').hex().encode('utf-8')
+        self.payload = self.message.encode('utf-8')
         payload_length = int(len(self.payload)/2)
         self.message_field = \
             self.convert_number_to_byte(4+4+payload_length, byte_num=4)
@@ -128,6 +130,7 @@ class TransactionCreator:
         return self.convert_number_to_byte(now, byte_num=4)
 
     # --- TODO --- public keyを数値として扱うのか、文字列として扱うのか調査.
+    # おそらく16進数表記されたバイト列として扱う
     def get_publickey(self):
         """ Convert public key from string to byte.
         [Input]
@@ -135,8 +138,9 @@ class TransactionCreator:
         [Output]
             public key : 32 byte value.
         """
-        key = int(self.public_key, 16)
-        return self.convert_number_to_byte(key, byte_num=32)
+        #key = int(self.public_key, 16)
+        #return self.convert_number_to_byte(key, byte_num=32)
+        return bytes.fromhex(self.public_key)
 
     # --- TODO --- 料金の計算方法が変わっているようなので、チェック.
     def calc_fee(self):
